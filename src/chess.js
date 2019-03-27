@@ -1,7 +1,8 @@
-import Pawn from './pieces/pawn';
+import Pawn from './pieces/pawn/pawn';
 
 class Chess {
-  constructor(pieces = []) {
+  constructor(name = '', pieces = []) {
+    this.name = name;
     this.pieces = pieces;
   }
 
