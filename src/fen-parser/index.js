@@ -1,15 +1,5 @@
-import { stringifyBoardPosition } from '../utils';
+import { stringifyBoardPosition, getPieceColor, getPieceType } from '../utils';
 import { BLACK, WHITE } from '../constants';
-
-const multipleChars = (char, length) => {
-  let string = '';
-  let l = length;
-  while (l > 0) {
-    string += char;
-    l -= 1;
-  }
-  return string;
-};
 
 class FenParser {
   constructor(fen = null) {
@@ -42,63 +32,45 @@ class FenParser {
    * Validates and parses FEN string
    */
   parse(fen) {
-    const fenRegex = /^\s*([prnbqkPRNBQK12345678]{1,8}(?:\/[prnbqkPRNBQK12345678]{1,8}){7})\s+(w|b)\s+([KQkqA-Ha-h]{1,4}|-)\s+(?:(?:([a-h][36]|-)\s+(\d{1,3})\s+(\d{1,4}))|(?:0\s+0))\s*$/;
+    const fenRegex = /^\s*(?<pieces>[prnbqkPRNBQK12345678]{1,8}(\/[prnbqkPRNBQK12345678]{1,8}){7})\s+(?<color>[wb]{1})\s+(?<castling>[KQkq]{1,4}|-)(\s+(?<enpass>[a-h][36]|-))(\s+(?<halfMoves>\d{1,4}))?(\s+(?<fullMoves>\d{1,4}))?\s*$/;
     const fenMatch = fen.match(fenRegex);
     this.isValid = !!fenMatch;
 
     if (this.isValid === true) {
-      const [, pieces, color, castling, enPassant, halfMoves, fullMoves] = fenMatch;
+      const { pieces, color, castling, enpass, halfMoves, fullMoves } = fenMatch.groups;
 
+      // Build board matrix with "type@position" strings
       this.pieces = pieces.split('/').map((rows, y) => {
         return rows
-          .replace(/[1-8]+/g, i => multipleChars('*', i))
+          .replace(/[1-8]+/g, i => '-'.repeat(i))
           .split('')
           .map((piece, x) => {
-            if (piece === '*') {
+            if (piece === '-') {
               return null;
             }
-            return {
-              color: piece.charCodeAt(0) >= 97 ? BLACK : WHITE,
-              type: piece.toLowerCase(),
-              position: stringifyBoardPosition(x, y)
-            };
+            return `${piece}@${stringifyBoardPosition(x, y)}`;
           });
       });
 
       this.activeColor = color;
-      this.enPassantTarget = enPassant === '-' ? null : enPassant.toUpperCase();
-      this.castling[WHITE] = {
-        kingSide: castling.indexOf('K') > -1,
-        queenSide: castling.indexOf('Q') > -1
-      };
-      this.castling[BLACK] = {
-        kingSide: castling.indexOf('k') > -1,
-        queenSide: castling.indexOf('q') > -1
-      };
-      this.halfMoves = parseInt(halfMoves, 10);
-      this.fullMoves = parseInt(fullMoves, 10);
+      this.enPassantTarget = !enpass || enpass === '-' ? null : enpass.toUpperCase();
+      this.castling = !castling || castling === '-' ? null : castling;
+      this.halfMoves = halfMoves === undefined ? 0 : parseInt(halfMoves, 10);
+      this.fullMoves = fullMoves === undefined ? 0 : parseInt(fullMoves, 10);
+      console.log(fen, fenMatch.groups, fullMoves);
     }
-  }
-
-  get parsedFen() {
-    const { pieces, activeColor, enPassantTarget, castling, halfMoves, fullMoves } = this;
-    return {
-      pieces,
-      activeColor,
-      enPassantTarget,
-      castling,
-      halfMoves,
-      fullMoves
-    };
   }
 
   stringify() {
     const { pieces, activeColor, castling, enPassantTarget, halfMoves, fullMoves } = this;
     const fenString = [];
+
+    // Decode board matrix back to FEN string format
     fenString.push(
       pieces
         .map(row => {
           return row.reduce((accumulator, piece) => {
+            // FEN string groups consecutive empty fields as integer(1-8)
             if (piece === null) {
               const lastCharIndex = accumulator.length - 1;
               const lastCharCode = accumulator.charCodeAt(lastCharIndex);
@@ -108,32 +80,17 @@ class FenParser {
               }
               return `${accumulator}1`;
             }
-            return (
-              accumulator +
-              (piece.color === WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase())
-            );
+
+            const color = getPieceColor(piece);
+            const type = getPieceType(piece);
+            return accumulator + (color === WHITE ? type.toUpperCase() : type.toLowerCase());
           }, '');
         })
         .join('/')
     );
 
     fenString.push(activeColor);
-
-    let castlingString = '';
-    if (castling[WHITE].kingSide === true) {
-      castlingString += 'K';
-    }
-    if (castling[WHITE].queenSide === true) {
-      castlingString += 'Q';
-    }
-    if (castling[BLACK].kingSide === true) {
-      castlingString += 'k';
-    }
-    if (castling[BLACK].queenSide === true) {
-      castlingString += 'q';
-    }
-    fenString.push(castlingString.length > 0 ? castlingString : '-');
-
+    fenString.push(castling === null ? '-' : castling);
     fenString.push(enPassantTarget === null ? '-' : enPassantTarget.toLowerCase());
     fenString.push(halfMoves);
     fenString.push(fullMoves);

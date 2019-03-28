@@ -1,3 +1,5 @@
+import { BLACK, WHITE } from './constants';
+
 /**
  * Parses board position
  * @param {String} position
@@ -35,4 +37,31 @@ export const stringifyBoardPosition = (x, y) => {
     return null;
   }
   return String.fromCharCode(65 + x) + (8 - y);
+};
+
+/**
+ * Get chess piece type from string
+ * @param {String} string example - "P@A4"
+ * @return {String} piece type, example 'p'
+ */
+export const getPieceType = string => {
+  return string[0].toLowerCase();
+};
+
+/**
+ * Get chess piece color from string
+ * @param {String} string example - "P@A4"
+ * @return {String} piece color, example 'w'
+ */
+export const getPieceColor = string => {
+  return string.charCodeAt(0) >= 97 ? BLACK : WHITE;
+};
+
+/**
+ * Get chess piece color from string
+ * @param {String} string example - "P@A4"
+ * @return {String} example - "A4"
+ */
+export const getPiecePosition = string => {
+  return string.split('@')[1];
 };
