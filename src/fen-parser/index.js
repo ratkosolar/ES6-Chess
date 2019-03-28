@@ -1,14 +1,12 @@
 import { stringifyBoardPosition, getPieceColor, getPieceType } from '../utils';
-import { BLACK, WHITE } from '../constants';
+import { WHITE } from '../constants';
 
 class FenParser {
   constructor(fen = null) {
     this.pieces = null;
     this.activeColor = null;
     this.enPassantTarget = null;
-    this.castling = {};
-    this.castling[WHITE] = null;
-    this.castling[BLACK] = null;
+    this.castling = null;
     this.halfMoves = null;
     this.fullMoves = null;
     this.fen = fen;
@@ -57,7 +55,6 @@ class FenParser {
       this.castling = !castling || castling === '-' ? null : castling;
       this.halfMoves = halfMoves === undefined ? 0 : parseInt(halfMoves, 10);
       this.fullMoves = fullMoves === undefined ? 0 : parseInt(fullMoves, 10);
-      console.log(fen, fenMatch.groups, fullMoves);
     }
   }
 
