@@ -6,6 +6,8 @@ beforeEach(() => {
   parser = new FenParser();
 });
 
+console.log(new FenParser('3b1rk1/1q2n3/p1p2p1p/1pK3p1/1P1B4/5NP1/5P1P/R2Q1R2 w KQkq -').pieces);
+
 describe('Fen parser class instance', () => {
   describe('FEN string validation', () => {
     it('isValid should return true if string is a valid FEN', () => {

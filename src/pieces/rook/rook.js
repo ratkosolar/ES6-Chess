@@ -6,16 +6,15 @@ class Rook extends Piece {
     super(color, position, ROOK);
   }
 
-  getPossibleMoves() {
-    const possibleMoves = [];
-    const pos = this.position;
-
-    return [...possibleMoves, pos];
-  }
-
-  isMovePossible(dest) {
-    const possibleMoves = this.getPossibleMoves();
-    return possibleMoves.indexOf(dest) > -1;
+  getPossibleMoves(board) {
+    // Rook move directions
+    const directions = [
+      { x: 1, y: 0, loop: true },
+      { x: -1, y: 0, loop: true },
+      { x: 0, y: 1, loop: true },
+      { x: 0, y: -1, loop: true }
+    ];
+    return this.buildPossibleMoves(board, directions);
   }
 }
 

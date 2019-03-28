@@ -6,16 +6,19 @@ class King extends Piece {
     super(color, position, KING);
   }
 
-  getPossibleMoves() {
-    const possibleMoves = [];
-    const pos = this.position;
-
-    return [...possibleMoves, pos];
-  }
-
-  isMovePossible(dest) {
-    const possibleMoves = this.getPossibleMoves();
-    return possibleMoves.indexOf(dest) > -1;
+  getPossibleMoves(board) {
+    // King move directions
+    const directions = [
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: -1 },
+      { x: 1, y: 1 },
+      { x: 1, y: -1 },
+      { x: -1, y: 1 },
+      { x: -1, y: -1 }
+    ];
+    return this.buildPossibleMoves(board, directions);
   }
 }
 

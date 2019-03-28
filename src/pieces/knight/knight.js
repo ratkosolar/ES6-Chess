@@ -6,16 +6,19 @@ class Knight extends Piece {
     super(color, position, KNIGHT);
   }
 
-  getPossibleMoves() {
-    const possibleMoves = [];
-    const pos = this.position;
-
-    return [...possibleMoves, pos];
-  }
-
-  isMovePossible(dest) {
-    const possibleMoves = this.getPossibleMoves();
-    return possibleMoves.indexOf(dest) > -1;
+  getPossibleMoves(board) {
+    // Knight move directions
+    const directions = [
+      { x: 2, y: 1 },
+      { x: 2, y: -1 },
+      { x: -2, y: 1 },
+      { x: -2, y: -1 },
+      { x: 1, y: 2 },
+      { x: 1, y: -2 },
+      { x: -1, y: 2 },
+      { x: -1, y: -2 }
+    ];
+    return this.buildPossibleMoves(board, directions);
   }
 }
 
