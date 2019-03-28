@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe('Chess rook piece class', () => {
   it('should extend Piece class', () => {
-    expect(rook instanceof Piece).toBe(true);
+    expect(rook instanceof Piece).toBeTruthy();
   });
 
   it('should be type ROOK', () => {

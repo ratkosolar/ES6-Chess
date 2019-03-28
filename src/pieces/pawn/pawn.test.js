@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe('Chess pawn piece class', () => {
   it('should extend Piece class', () => {
-    expect(pawn instanceof Piece).toBe(true);
+    expect(pawn instanceof Piece).toBeTruthy();
   });
 
   it('should be type PAWN', () => {

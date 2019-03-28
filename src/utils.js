@@ -1,9 +1,7 @@
-import { WHITE, BLACK, CHESS_PIECE_TYPES } from './constants';
-
 /**
  * Parses board position
  * @param {String} position
- * @example parseBoardPosition('a4') returns {x: 0, y: 4, position: 'a4'}
+ * @return {x: Int, y: Int, position: String}
  */
 export const parseBoardPosition = position => {
   const posArr = position.toUpperCase().split('');
@@ -26,31 +24,15 @@ export const parseBoardPosition = position => {
   };
 };
 
-export const stringifyBoardPosition = (x, y) => {
-  return String.fromCharCode(65 + x) + (8 - y);
-};
-
 /**
- * Builds chess board matrix (two dimensional array)
- * @param {Integer} size
+ * Creates a string chess board position from {x, y}
+ * @param {Int} x
+ * @param {int} y
+ * @return {String} example - 'A4'
  */
-export const buildBoardMatrix = (size = 8) => {
-  const matrix = [];
-  for (let i = 0; i < size; i += 1) {
-    matrix.push(new Array(size).fill(null));
+export const stringifyBoardPosition = (x, y) => {
+  if (x < 0 || x > 7 || y < 0 || y > 7) {
+    return null;
   }
-  return matrix;
-};
-
-export const getFenPieceColor = fenPiece => {
-  if (fenPiece.charCodeAt(0) >= 97) {
-    return BLACK;
-  }
-  return WHITE;
-};
-
-export const getFenPieceType = fenPiece => {
-  const piece = fenPiece.toLowerCase();
-  const typeIndex = CHESS_PIECE_TYPES.indexOf(piece);
-  return typeIndex !== -1 ? CHESS_PIECE_TYPES[typeIndex] : null;
+  return String.fromCharCode(65 + x) + (8 - y);
 };
