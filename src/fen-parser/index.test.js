@@ -6,8 +6,6 @@ beforeEach(() => {
   parser = new FenParser();
 });
 
-console.log(new FenParser('3b1rk1/1q2n3/p1p2p1p/1pK3p1/1P1B4/5NP1/5P1P/R2Q1R2 w KQkq -').pieces);
-
 describe('Fen parser class instance', () => {
   describe('FEN string validation', () => {
     it('isValid should return true if string is a valid FEN', () => {
@@ -44,7 +42,7 @@ describe('Fen parser class instance', () => {
   describe('FEN string parsing', () => {
     it('should parse all properties from a valid FEN string', () => {
       parser.fen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
-      expect(parser.pieces).not.toBeNull();
+      expect(parser.board).not.toBeNull();
       expect(parser.activeColor).not.toBeNull();
       expect(parser.castling).not.toBeNull();
       expect(parser.enPassantTarget).not.toBeNull();
@@ -62,10 +60,10 @@ describe('Fen parser class instance', () => {
 
     it('should parse castling possibility from valid FEN string', () => {
       parser.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-      expect(parser.castling).toBe('KQkq');
+      expect(parser.castling).toEqual({ K: true, Q: true, k: true, q: true });
 
       parser.fen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b - e3 0 1';
-      expect(parser.castling).toBeNull();
+      expect(parser.castling).toEqual({ K: false, Q: false, k: false, q: false });
     });
 
     it('should parse en passant target from valid FEN string', () => {
@@ -89,9 +87,9 @@ describe('Fen parser class instance', () => {
       expect(parser.fullMoves).toBe(2);
     });
 
-    it('should parse a board matrix with chess pieces from valid FEN string', () => {
+    it('should parse a board matrix with chess board from valid FEN string', () => {
       parser.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-      let rows = parser.pieces;
+      let rows = parser.board;
       expect(rows[0]).toEqual(['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', 'n@G8', 'r@H8']);
       expect(rows[1]).toEqual(['p@A7', 'p@B7', 'p@C7', 'p@D7', 'p@E7', 'p@F7', 'p@G7', 'p@H7']);
       expect(rows[2]).toEqual([null, null, null, null, null, null, null, null]);
@@ -102,7 +100,7 @@ describe('Fen parser class instance', () => {
       expect(rows[7]).toEqual(['R@A1', 'N@B1', 'B@C1', 'Q@D1', 'K@E1', 'B@F1', 'N@G1', 'R@H1']);
 
       parser.fen = '1r3rk1/pb3p1p/np1Nn1p1/3pP1q1/3P4/1P1Q4/PBP5/1KR4R w - - 30 40';
-      rows = parser.pieces;
+      rows = parser.board;
       expect(rows[0]).toEqual([null, 'r@B8', null, null, null, 'r@F8', 'k@G8', null]);
       expect(rows[1]).toEqual(['p@A7', 'b@B7', null, null, null, 'p@F7', null, 'p@H7']);
       expect(rows[2]).toEqual(['n@A6', 'p@B6', null, 'N@D6', 'n@E6', null, 'p@G6', null]);
@@ -130,18 +128,18 @@ describe('Fen parser class instance', () => {
 
     it('stringify should return updated FEN string', () => {
       parser.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-      parser.pieces[1][2] = null;
-      parser.pieces[1][3] = null;
-      parser.pieces[1][4] = null;
-      parser.pieces[2][2] = 'p@C6';
-      parser.pieces[3][3] = 'p@D5';
-      parser.pieces[4][3] = 'P@D4';
-      parser.pieces[5][4] = 'P@E3';
-      parser.pieces[6][3] = null;
-      parser.pieces[6][4] = null;
+      parser.board[1][2] = null;
+      parser.board[1][3] = null;
+      parser.board[1][4] = null;
+      parser.board[2][2] = 'p@C6';
+      parser.board[3][3] = 'p@D5';
+      parser.board[4][3] = 'P@D4';
+      parser.board[5][4] = 'P@E3';
+      parser.board[6][3] = null;
+      parser.board[6][4] = null;
       parser.activeColor = BLACK;
       parser.enPassantTarget = 'D6';
-      parser.castling = 'Qk';
+      parser.castling = { K: false, Q: true, k: true, q: false };
       parser.halfMoves = 5;
       parser.fullMoves = 11;
       expect(parser.stringify()).toBe(

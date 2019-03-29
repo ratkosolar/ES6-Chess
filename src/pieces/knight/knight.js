@@ -8,7 +8,7 @@ class Knight extends Piece {
 
   getPossibleMoves(board) {
     // Knight move directions
-    const directions = [
+    const moveset = [
       { x: 2, y: 1 },
       { x: 2, y: -1 },
       { x: -2, y: 1 },
@@ -18,7 +18,7 @@ class Knight extends Piece {
       { x: -1, y: 2 },
       { x: -1, y: -2 }
     ];
-    return this.buildPossibleMoves(board, directions);
+    return this.buildPossibleMoves(board, moveset);
   }
 }
 

@@ -1,27 +1,41 @@
-import pieceClasses from './pieces';
-import DEFAULT_FEN, { GAME_ONGOING } from './constants';
+import { GAME_ONGOING, WHITE, DEFAULT_FEN } from './constants';
 import FenParser from './fen-parser';
-import { getPieceColor, getPieceType } from './utils';
+import Board from './board/board';
+import { getPieceColor } from './utils';
 
 class Chess {
-  constructor(fen) {
-    this.init();
-    this.loadFen(fen || DEFAULT_FEN);
-    this.calculatePossibleMoves();
-  }
-
-  init() {
-    this.history = [];
+  constructor(fen = null) {
     this.info = {};
+    this.history = [];
     this.status = GAME_ONGOING;
+
+    this.board = new Board();
+    this.activeColor = WHITE;
+    this.enPassantTarget = null;
+    this.castling = {
+      K: true,
+      Q: true,
+      k: true,
+      q: true
+    };
+    this.halfMoves = 0;
+    this.fullMoves = 1;
+
+    this.loadFen(fen || DEFAULT_FEN);
   }
 
+  /**
+   * Parses a FEN string and loads the data
+   * @param {String} fen
+   */
   loadFen(fen) {
-    this.fenParser = new FenParser();
-    this.fenParser.fen = fen;
+    const fenParser = new FenParser(fen);
+    if (!fenParser.isValid) {
+      throw new Error(`Invalid FEN string provided ${fen}`);
+    }
 
-    const { pieces, activeColor, enPassantTarget, castling, halfMoves, fullMoves } = this.fenParser;
-    this.board = pieces;
+    const { board, activeColor, enPassantTarget, castling, halfMoves, fullMoves } = fenParser;
+    this.board.setBoard(board);
     this.activeColor = activeColor;
     this.enPassantTarget = enPassantTarget;
     this.castling = castling;
@@ -29,33 +43,48 @@ class Chess {
     this.fullMoves = fullMoves;
   }
 
-  loadPgn(pgn) {
-    // TODO load and parse PGN file to track history
+  /**
+   * FEN stringify current game
+   * @return {String} FEN string
+   */
+  get fen() {
+    const fenParser = new FenParser();
+    fenParser.board = this.board.getBoard();
+    fenParser.activeColor = this.activeColor;
+    fenParser.enPassantTarget = this.enPassantTarget;
+    fenParser.castling = this.castling;
+    fenParser.halfMoves = this.halfMoves;
+    fenParser.fullMoves = this.fullMoves;
+    return fenParser.stringify();
   }
 
-  calculatePossibleMoves() {
-    this.possibleMoves = [];
+  moves(piece = null) {
+    if (piece === null) {
+      return this.board.getAllLegalMoves(
+        this.board.getBoard(),
+        this.activeColor,
+        this.enPassantTarget,
+        this.castling
+      );
+    }
 
-    this.board.map(row => {
-      row.map(piece => {
-        // Only calculate moves for active color player
-        const color = getPieceColor(piece);
-        if (color === this.activeColor) {
-          this.possibleMoves.concat(this.getPossibleMovesFor(piece));
-        }
-      });
-    });
+    if (getPieceColor(piece) !== this.activeColor) {
+      return [];
+    }
+
+    return this.board.getLegalMovesForPiece(
+      piece,
+      this.board.getBoard(),
+      this.enPassantTarget,
+      this.castling
+    );
   }
 
-  getPossibleMovesFor(piece) {
-    const type = getPieceType(piece);
-    const color = getPieceColor(piece);
+  move() {}
 
-    const PieceClass = pieceClasses[type];
-    const chessPiece = new PieceClass(color, type);
+  isCheck() {}
 
-    return chessPiece.getPossibleMoves(this.board, this.enPassantTarget, this.castling);
-  }
+  isCheckmate() {}
 }
 
 export default Chess;

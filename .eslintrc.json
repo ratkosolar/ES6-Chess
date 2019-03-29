@@ -19,6 +19,7 @@
     "comma-dangle": ["error", "never"],
     "no-console": "off",
     "no-underscore-dangle": "off",
-    "prettier/prettier": ["error"]
+    "prettier/prettier": ["error"],
+    "class-methods-use-this": "off"
   }
 }

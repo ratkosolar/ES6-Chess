@@ -7,8 +7,7 @@ class Queen extends Piece {
   }
 
   getPossibleMoves(board) {
-    // Queen move directions
-    const directions = [
+    const moveset = [
       { x: 1, y: 0, loop: true },
       { x: -1, y: 0, loop: true },
       { x: 0, y: 1, loop: true },
@@ -18,7 +17,7 @@ class Queen extends Piece {
       { x: -1, y: 1, loop: true },
       { x: -1, y: -1, loop: true }
     ];
-    return this.buildPossibleMoves(board, directions);
+    return this.buildPossibleMoves(board, moveset);
   }
 }
 

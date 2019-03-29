@@ -1,5 +1,5 @@
 import King from './king';
-import { WHITE, KING } from '../../constants';
+import { WHITE, KING, BLACK } from '../../constants';
 import Piece from '../piece';
 
 let king;
@@ -58,6 +58,197 @@ describe('Chess king piece class', () => {
       expect(moves.D6.capture).toBeFalsy();
       expect(moves.D5.capture).toBeFalsy();
       expect(moves.C4.capture).toBeFalsy();
+    });
+  });
+
+  describe('King castling', () => {
+    it('should allow white king to castle queenside', () => {
+      const board = [
+        ['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, null, 'p@F7', 'p@G7', 'p@H7'],
+        [null, 'p@B6', null, 'p@D6', null, 'n@F6', null, null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', 'N@C3', null, null, 'Q@F3', null, null],
+        ['P@A2', 'B@B2', 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', null, null, null, 'K@E1', 'B@F1', 'N@G1', 'R@H1']
+      ];
+      king.position = 'E1';
+      const moves = king.getPossibleMoves(board, null, { Q: true });
+      expect(Object.keys(moves).sort()).toEqual(['E2', 'D1', 'C1'].sort());
+      expect(moves.C1.castle).toBeTruthy();
+    });
+
+    it('should not allow white king to castle queenside because of bishop', () => {
+      const board = [
+        ['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, null, 'p@F7', 'p@G7', 'p@H7'],
+        [null, 'p@B6', null, 'p@D6', null, 'n@F6', null, null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', 'N@C3', null, null, 'Q@F3', null, null],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', null, 'B@B2', null, 'K@E1', 'B@F1', 'N@G1', 'R@H1']
+      ];
+      king.position = 'E1';
+      const moves = king.getPossibleMoves(board, null, { Q: true });
+      expect(Object.keys(moves).sort()).toEqual(['E2', 'D1'].sort());
+    });
+
+    it('should allow white king to castle kingside', () => {
+      const board = [
+        ['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, null, 'p@F7', 'p@G7', 'p@H7'],
+        [null, 'p@B6', null, 'p@D6', null, 'n@F6', null, null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', 'N@C3', null, null, 'Q@F3', null, 'N@G1'],
+        ['P@A2', null, 'P@C2', 'P@D2', 'B@F1', 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', null, 'B@B2', null, 'K@E1', null, null, 'R@H1']
+      ];
+      king.position = 'E1';
+      const moves = king.getPossibleMoves(board, null, { K: true });
+      expect(Object.keys(moves).sort()).toEqual(['D1', 'F1', 'G1'].sort());
+      expect(moves.G1.castle).toBeTruthy();
+    });
+
+    it('should not allow white king to castle kingside because of bishop', () => {
+      const board = [
+        ['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, null, 'p@F7', 'p@G7', 'p@H7'],
+        [null, 'p@B6', null, 'p@D6', null, 'n@F6', null, null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', 'N@C3', null, null, 'Q@F3', null, 'N@G1'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', null, 'B@B2', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.position = 'E1';
+      const moves = king.getPossibleMoves(board, null, { K: true });
+      expect(Object.keys(moves).sort()).toEqual(['E2', 'D1'].sort());
+    });
+
+    it('should allow white king to castle both sides', () => {
+      const board = [
+        ['r@A8', 'n@B8', 'b@C8', 'q@D8', 'k@E8', 'b@F8', null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, null, 'p@F7', 'p@G7', 'p@H7'],
+        [null, 'p@B6', null, 'p@D6', null, 'n@F6', null, null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', 'N@C3', null, null, 'Q@F3', null, 'N@G1'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', null, null, null, 'K@E1', null, null, 'R@H1']
+      ];
+      king.position = 'E1';
+      const moves = king.getPossibleMoves(board, null, { K: true, Q: true });
+      expect(Object.keys(moves).sort()).toEqual(['E2', 'D1', 'F1', 'C1', 'G1'].sort());
+      expect(moves.C1.castle).toBeTruthy();
+      expect(moves.G1.castle).toBeTruthy();
+    });
+    it('should allow black king to castle queenside', () => {
+      const board = [
+        ['r@A8', null, null, null, 'k@E8', null, null, 'r@H8'],
+        ['p@A7', null, 'p@C7', 'b@B7', 'q@E7', 'p@F7', 'b@G7', 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { q: true });
+      expect(Object.keys(moves).sort()).toEqual(['D8', 'F8', 'C8'].sort());
+      expect(moves.C8.castle).toBeTruthy();
+    });
+
+    it('should not allow black king to castle queenside because of bishop', () => {
+      const board = [
+        ['r@A8', null, 'b@B7', null, 'k@E8', null, null, 'r@H8'],
+        ['p@A7', null, 'p@C7', null, 'q@E7', 'p@F7', 'b@G7', 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { q: true });
+      expect(Object.keys(moves).sort()).toEqual(['D7', 'D8', 'F8'].sort());
+    });
+
+    it('should allow black king to castle kingside', () => {
+      const board = [
+        ['r@A8', null, null, null, 'k@E8', null, null, 'r@H8'],
+        ['p@A7', 'b@B7', 'p@C7', null, 'q@E7', 'p@F7', 'b@G7', 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { k: true });
+      expect(Object.keys(moves).sort()).toEqual(['D7', 'D8', 'F8', 'G8'].sort());
+      expect(moves.G8.castle).toBeTruthy();
+    });
+
+    it('should not allow black king to castle kingside because of bishop', () => {
+      const board = [
+        ['r@A8', null, null, null, 'k@E8', null, 'b@G8', 'r@H8'],
+        ['p@A7', 'b@B7', 'p@C7', null, 'q@E7', 'p@F7', null, 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { k: true });
+      expect(Object.keys(moves).sort()).toEqual(['D7', 'D8', 'F8'].sort());
+    });
+
+    it('should allow black king to castle both sides', () => {
+      const board = [
+        ['r@A8', null, null, null, 'k@E8', null, null, 'r@H8'],
+        ['p@A7', 'b@B7', 'p@C7', null, 'q@E7', 'p@F7', 'b@G7', 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { q: true, k: true });
+      expect(Object.keys(moves).sort()).toEqual(['D8', 'F8', 'D7', 'G8', 'C8'].sort());
+      expect(moves.G8.castle).toBeTruthy();
+      expect(moves.C8.castle).toBeTruthy();
+    });
+
+    it('should block black king to castle because of check', () => {
+      const board = [
+        ['r@A8', null, null, null, 'k@E8', null, null, 'r@H8'],
+        ['p@A7', 'b@B7', 'p@C7', null, 'q@E7', 'p@F7', 'b@G7', 'p@H7'],
+        [null, 'p@B6', 'n@C6', 'p@D6', null, 'n@F6', 'p@G6', null],
+        [null, null, null, null, 'p@E5', null, null, null],
+        [null, null, null, null, 'P@E4', null, null, null],
+        [null, 'P@B3', null, null, null, 'Q@F3', null, 'N@H3'],
+        ['P@A2', null, 'P@C2', 'P@D2', null, 'P@F2', 'P@G2', 'P@H2'],
+        ['R@A1', 'N@B1', 'B@C1', null, 'K@E1', 'B@F1', null, 'R@H1']
+      ];
+      king.color = BLACK;
+      king.position = 'E8';
+      const moves = king.getPossibleMoves(board, null, { q: true, k: true }, true);
+      expect(Object.keys(moves).sort()).toEqual(['D8', 'F8', 'D7'].sort());
     });
   });
 });
