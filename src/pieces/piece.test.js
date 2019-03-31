@@ -63,7 +63,7 @@ describe('Chess piece class', () => {
     expect(setPieceColor(null)).toThrowError();
   });
 
-  it('should should validate piece position', () => {
+  it('should validate piece position', () => {
     expect(setPiecePosition('A4')).not.toThrowError();
     expect(setPiecePosition('H8')).not.toThrowError();
     expect(setPiecePosition('F7')).not.toThrowError();

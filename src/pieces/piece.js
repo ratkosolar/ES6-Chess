@@ -99,7 +99,7 @@ class Piece {
             piece: this.type,
             color: this.color,
             capture: isCapture,
-            capturePiece: isCapture ? occupiedPiece : null,
+            capturedPiece: isCapture ? occupiedPiece : null,
             enPassant: isEnPassant,
             castle: isCastle ? move.type : null
           };

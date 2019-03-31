@@ -1,7 +1,22 @@
-import { GAME_ONGOING, WHITE, DEFAULT_FEN } from './constants';
+import {
+  GAME_ONGOING,
+  WHITE,
+  DEFAULT_FEN,
+  CASTLE_QUEENSIDE,
+  CASTLE_KINGSIDE,
+  PAWN,
+  BLACK
+} from './constants';
 import FenParser from './fen-parser';
 import Board from './board/board';
-import { getPieceColor } from './utils';
+import {
+  getPieceColor,
+  parseBoardPosition,
+  buildPieceString,
+  getBoardPieceAt,
+  updatePiecePosition,
+  stringifyBoardPosition
+} from './utils';
 
 class Chess {
   constructor(fen = null) {
@@ -20,6 +35,8 @@ class Chess {
     };
     this.halfMoves = 0;
     this.fullMoves = 1;
+
+    this.deadPieces = [];
 
     this.loadFen(fen || DEFAULT_FEN);
   }
@@ -80,11 +97,85 @@ class Chess {
     );
   }
 
-  move() {}
+  move(piece, to) {
+    const color = getPieceColor(piece);
+    if (color !== this.activeColor) {
+      throw new Error(`Not ${color} turn`);
+    }
+
+    const board = this.getBoard();
+    const legalMove = this.board
+      .getLegalMovesForPiece(piece, board, this.enPassantTarget, this.castling)
+      .find(move => move.to === to);
+
+    if (!legalMove) {
+      throw new Error('Move not legal');
+    }
+
+    // Move the piece
+    const fromPos = parseBoardPosition(legalMove.from);
+    const toPos = parseBoardPosition(legalMove.to);
+    board[fromPos.y][fromPos.x] = null;
+    board[toPos.y][toPos.x] = buildPieceString(legalMove.piece, color, legalMove.to);
+
+    if (legalMove.capture) {
+      this.deadPieces.push(legalMove.capturedPiece);
+    }
+
+    // Move castling rook
+    if (legalMove.castle) {
+      const castleRookY = color === WHITE ? 7 : 0;
+
+      if (legalMove.castle === CASTLE_QUEENSIDE) {
+        const castleRookX = 0;
+        const castleRook = getBoardPieceAt(board, castleRookX, castleRookY);
+        const newRookPosition = stringifyBoardPosition(castleRookX + 3, castleRookY);
+        board[castleRookY][castleRookX] = null;
+        board[castleRookY][castleRookX + 3] = updatePiecePosition(castleRook, newRookPosition);
+      } else if (legalMove.castle === CASTLE_KINGSIDE) {
+        const castleRookX = 7;
+        const castleRook = getBoardPieceAt(board, 7, castleRookY);
+        const newRookPosition = stringifyBoardPosition(castleRookX - 2, castleRookY);
+        board[castleRookY][castleRookX] = null;
+        board[castleRookY][castleRookX - 2] = updatePiecePosition(castleRook, newRookPosition);
+      }
+    }
+
+    // En passant target (if a pawn does a 2 step move)
+    if (legalMove.piece === PAWN && Math.abs(fromPos.y - toPos.y) === 2) {
+      const enPassantTargetY = color === WHITE ? fromPos.y - 1 : fromPos.y + 1;
+      this.enPassantTarget = stringifyBoardPosition(fromPos.x, enPassantTargetY);
+    } else {
+      this.enPassantTarget = null;
+    }
+
+    this.board = new Board(board);
+    this.fullMoves += 1;
+    this.halfMoves = Math.floor((this.fullMoves + 1) / 2);
+    this.activeColor = color === WHITE ? BLACK : WHITE;
+  }
 
   isCheck() {}
 
   isCheckmate() {}
+
+  isDone() {
+    const board = this.getBoard();
+    const legalMoves = this.board.getAllLegalMoves(
+      board,
+      this.activeColor,
+      this.enPassantTarget,
+      this.castling
+    );
+    if (legalMoves.length === 0) {
+      return true;
+    }
+    return false;
+  }
+
+  getBoard() {
+    return this.board.getBoard();
+  }
 }
 
 export default Chess;
