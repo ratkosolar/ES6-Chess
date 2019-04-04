@@ -1,6 +1,6 @@
 {
-  "name": "es6-chess",
-  "version": "1.0.0",
+  "name": "chess-engine-es6",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/chess.bundle.js",
   "scripts": {
