@@ -1,4 +1,5 @@
 import Chess from './chess';
+import { WHITE } from './constants';
 
 let chess;
 beforeEach(() => {
@@ -17,7 +18,7 @@ describe('Chess class instance', () => {
     });
     it('should allow white to make only 1 move', () => {
       expect(() => chess.move('P@D2', 'D4')).not.toThrowError();
-      expect(() => chess.move('P@E2', 'E3')).toThrowError('Not w turn');
+      expect(() => chess.move('P@E2', 'E3')).toThrowError();
     });
     it('should record en passant target when 2 step pawn move', () => {
       chess.move('P@D2', 'D4');
@@ -81,7 +82,11 @@ describe('Chess class instance', () => {
       chess.move('Q@D1', 'F3');
       chess.move('n@B8', 'C6');
       chess.move('Q@F3', 'F7');
-      expect(chess.isDone()).toBe(true);
+      expect(chess.isComplete()).toBe(true);
+      expect(chess.isCheck()).toBe(true);
+      expect(chess.isCheckmate()).toBe(true);
+      expect(chess.isCheck(WHITE)).toBe(false);
+      expect(chess.isDraw()).toBe(false);
     });
   });
 });

@@ -5,7 +5,8 @@ import {
   CASTLE_QUEENSIDE,
   CASTLE_KINGSIDE,
   PAWN,
-  BLACK
+  BLACK,
+  GAME_COMPLETE
 } from './constants';
 import FenParser from './fen-parser';
 import Board from './board/board';
@@ -75,7 +76,13 @@ class Chess {
     return fenParser.stringify();
   }
 
+  /**
+   * Gets an array of legal moves for current player
+   * @param {String} piece - Filter moves by piece
+   * @return {Array} moves - Array of moves
+   */
   moves(piece = null) {
+    // If no piece, return all legal moves for current player
     if (piece === null) {
       return this.board.getAllLegalMoves(
         this.board.getBoard(),
@@ -85,6 +92,7 @@ class Chess {
       );
     }
 
+    // If piece color is not current player, return empty array
     if (getPieceColor(piece) !== this.activeColor) {
       return [];
     }
@@ -97,10 +105,15 @@ class Chess {
     );
   }
 
+  /**
+   * Make a chess move
+   * @param {String} piece - Piece to move
+   * @param {String} to - Board position
+   */
   move(piece, to) {
     const color = getPieceColor(piece);
     if (color !== this.activeColor) {
-      throw new Error(`Not ${color} turn`);
+      throw new Error(`Wait for your turn`);
     }
 
     const board = this.getBoard();
@@ -109,7 +122,7 @@ class Chess {
       .find(move => move.to === to);
 
     if (!legalMove) {
-      throw new Error('Move not legal');
+      throw new Error(`You can't move ${piece} to ${to}`);
     }
 
     // Move the piece
@@ -122,17 +135,18 @@ class Chess {
       this.deadPieces.push(legalMove.capturedPiece);
     }
 
-    // Move castling rook
+    // Move the rook if castling
     if (legalMove.castle) {
       const castleRookY = color === WHITE ? 7 : 0;
-
       if (legalMove.castle === CASTLE_QUEENSIDE) {
+        // Queen side castling
         const castleRookX = 0;
         const castleRook = getBoardPieceAt(board, castleRookX, castleRookY);
         const newRookPosition = stringifyBoardPosition(castleRookX + 3, castleRookY);
         board[castleRookY][castleRookX] = null;
         board[castleRookY][castleRookX + 3] = updatePiecePosition(castleRook, newRookPosition);
       } else if (legalMove.castle === CASTLE_KINGSIDE) {
+        // King side castling
         const castleRookX = 7;
         const castleRook = getBoardPieceAt(board, 7, castleRookY);
         const newRookPosition = stringifyBoardPosition(castleRookX - 2, castleRookY);
@@ -141,7 +155,7 @@ class Chess {
       }
     }
 
-    // En passant target (if a pawn does a 2 step move)
+    // Set new en passant target (if a pawn does a 2 step move)
     if (legalMove.piece === PAWN && Math.abs(fromPos.y - toPos.y) === 2) {
       const enPassantTargetY = color === WHITE ? fromPos.y - 1 : fromPos.y + 1;
       this.enPassantTarget = stringifyBoardPosition(fromPos.x, enPassantTargetY);
@@ -149,30 +163,54 @@ class Chess {
       this.enPassantTarget = null;
     }
 
+    // Update game state
     this.board = new Board(board);
     this.fullMoves += 1;
     this.halfMoves = Math.floor((this.fullMoves + 1) / 2);
     this.activeColor = color === WHITE ? BLACK : WHITE;
+    this.status =
+      this.board.getAllLegalMoves(board, this.enPassantTarget, this.castling).length !== 0
+        ? GAME_ONGOING
+        : GAME_COMPLETE;
   }
 
-  isCheck() {}
-
-  isCheckmate() {}
-
-  isDone() {
-    const board = this.getBoard();
-    const legalMoves = this.board.getAllLegalMoves(
-      board,
-      this.activeColor,
-      this.enPassantTarget,
-      this.castling
-    );
-    if (legalMoves.length === 0) {
-      return true;
-    }
-    return false;
+  /**
+   * Is game complete
+   * @return {Boolean} isComplete
+   */
+  isComplete() {
+    return this.status === GAME_COMPLETE;
   }
 
+  /**
+   * Is check
+   * @param {String} color - player color
+   * @return {Boolean} isCheck
+   */
+  isCheck(color = null) {
+    const board = this.board.getBoard();
+    return this.board.isCheck(color === null ? this.activeColor : color, board);
+  }
+
+  /**
+   * Is checkmate
+   * @return {Boolean} isCheckmate
+   */
+  isCheckmate() {
+    return this.isCheck() && this.moves().length === 0;
+  }
+
+  /**
+   * Is draw
+   * @return {Boolean} isDraw
+   */
+  isDraw() {
+    return !this.isCheck() && this.moves().length === 0;
+  }
+
+  /**
+   * Get board matrix
+   */
   getBoard() {
     return this.board.getBoard();
   }
